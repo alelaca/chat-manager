@@ -4,53 +4,53 @@ import (
 	"time"
 
 	"github.com/alelaca/chat-manager/src/apperrors"
+	"github.com/alelaca/chat-manager/src/entities/dtos"
 	"github.com/google/uuid"
 )
 
 type Post struct {
-	ID          string
-	Message     string
-	Sender      string
-	Room        string
-	CreatedDate time.Time
+	ID          string    `json:"id"`
+	Message     string    `json:"message"`
+	Sender      string    `json:"sender"`
+	Room        string    `json:"room"`
+	CreatedDate time.Time `json:"created_date"`
 }
 
 type Room struct {
-	ID       string
-	Name     string
-	Messages []Post
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type User struct {
-	ID       string
-	Nickname string
-	Password string
+	ID       string `json:"id"`
+	Nickname string `json:"nickname"`
+	Password string `json:"password"`
 }
 
-func CreatePost(message string, sender string, room string) (Post, error) {
-	if err := ValidatePost(message, sender, room); err != nil {
+func CreatePost(postDTO dtos.PostDTO) (Post, error) {
+	if err := ValidatePost(postDTO); err != nil {
 		return Post{}, err
 	}
 
 	return Post{
 		ID:          uuid.NewString(),
-		Message:     message,
-		Sender:      sender,
-		Room:        room,
+		Message:     postDTO.Message,
+		Sender:      postDTO.Sender,
+		Room:        postDTO.Room,
 		CreatedDate: time.Now(),
 	}, nil
 }
 
-func ValidatePost(message string, sender string, room string) error {
-	if message == "" {
-		return apperrors.NewPropertyRequiredError("message", message)
+func ValidatePost(postDTO dtos.PostDTO) error {
+	if postDTO.Message == "" {
+		return apperrors.NewPropertyRequiredError("message", "message")
 	}
 
-	if sender == "" {
+	if postDTO.Sender == "" {
 		return apperrors.NewPropertyRequiredError("message", "sender")
 	}
 
-	if room == "" {
+	if postDTO.Room == "" {
 		return apperrors.NewPropertyRequiredError("message", "room")
 	}
 

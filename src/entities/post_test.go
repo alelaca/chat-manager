@@ -3,6 +3,8 @@ package entities
 import (
 	"testing"
 	"time"
+
+	"github.com/alelaca/chat-manager/src/entities/dtos"
 )
 
 func TestCreatePost_OK(t *testing.T) {
@@ -11,7 +13,13 @@ func TestCreatePost_OK(t *testing.T) {
 	room := "work-room"
 	expectedTimeAfter := time.Now()
 
-	post, err := CreatePost(msg, sender, room)
+	postDTO := dtos.PostDTO{
+		Message: msg,
+		Sender:  sender,
+		Room:    room,
+	}
+
+	post, err := CreatePost(postDTO)
 
 	if err != nil {
 		t.Errorf("Test failed with error '%s'", err.Error())
@@ -43,7 +51,13 @@ func TestCreatePost_ValidationFail(t *testing.T) {
 	sender := "Jane"
 	room := "work-room"
 
-	_, err := CreatePost(msg, sender, room)
+	postDTO := dtos.PostDTO{
+		Message: msg,
+		Sender:  sender,
+		Room:    room,
+	}
+
+	_, err := CreatePost(postDTO)
 
 	if err == nil {
 		t.Errorf("Test failed. Expected an error from function")
@@ -55,7 +69,13 @@ func TestValidatePost_InvalidMessage(t *testing.T) {
 	sender := "Jane"
 	room := "work-room"
 
-	err := ValidatePost(msg, sender, room)
+	postDTO := dtos.PostDTO{
+		Message: msg,
+		Sender:  sender,
+		Room:    room,
+	}
+
+	err := ValidatePost(postDTO)
 
 	if err == nil {
 		t.Errorf("Test failed. Expected an error from function")
@@ -67,7 +87,13 @@ func TestValidatePost_InvalidSender(t *testing.T) {
 	sender := ""
 	room := "work-room"
 
-	err := ValidatePost(msg, sender, room)
+	postDTO := dtos.PostDTO{
+		Message: msg,
+		Sender:  sender,
+		Room:    room,
+	}
+
+	err := ValidatePost(postDTO)
 
 	if err == nil {
 		t.Errorf("Test failed. Expected an error from function")
@@ -79,7 +105,13 @@ func TestValidatePost_InvalidRoom(t *testing.T) {
 	sender := "Jane"
 	room := ""
 
-	err := ValidatePost(msg, sender, room)
+	postDTO := dtos.PostDTO{
+		Message: msg,
+		Sender:  sender,
+		Room:    room,
+	}
+
+	err := ValidatePost(postDTO)
 
 	if err == nil {
 		t.Errorf("Test failed. Expected an error from function")

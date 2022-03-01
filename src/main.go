@@ -1,18 +1,37 @@
 package main
 
 import (
-	"github.com/alelaca/chat-manager/src/adapter/routes"
-	"github.com/alelaca/chat-manager/src/adapter/websocket"
-	"github.com/alelaca/chat-manager/src/infrastructure/repository/local"
+	"fmt"
+
+	"github.com/alelaca/chat-manager/src/adapters/queues"
+	"github.com/alelaca/chat-manager/src/adapters/routes"
+	"github.com/alelaca/chat-manager/src/adapters/websocket"
+	rabbitmqqueue "github.com/alelaca/chat-manager/src/queues/rabbitmq"
+	"github.com/alelaca/chat-manager/src/repository/local"
+	rabbitmqtopics "github.com/alelaca/chat-manager/src/topics/rabbitmq"
 	"github.com/alelaca/chat-manager/src/usecases/post"
+	"github.com/streadway/amqp"
 )
 
 func main() {
+	connection, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	if err != nil {
+		panic(fmt.Sprintf("error initializing rabbitmq connection, log: %s", err.Error()))
+	}
+
 	repository := local.CreateLocalMemory()
-	postHandler := post.InitializePostHandler(repository)
+
+	queuesHandler := rabbitmqqueue.InitializeRabbitMQHandler(connection)
+	topicsHandler := rabbitmqtopics.InitializeRabbitMQHandler(connection)
+
+	postHandler := post.InitializePostHandler(topicsHandler, repository)
+
 	websocketHandler := websocket.InitializeWebsocketHandler(postHandler)
+	worker := queues.InitializeWorker(queuesHandler, postHandler, websocketHandler)
 	router := routes.InitializeRouter(*websocketHandler)
 
 	go websocketHandler.StartPool()
+	go worker.StartPollingPostsMessages()
+
 	router.Run(":8080")
 }

@@ -27,6 +27,7 @@ type User struct {
 	Password string `json:"password"`
 }
 
+// Creates Post entity
 func CreatePost(postDTO dtos.PostDTO) (Post, error) {
 	if err := ValidatePost(postDTO); err != nil {
 		return Post{}, err
@@ -41,6 +42,7 @@ func CreatePost(postDTO dtos.PostDTO) (Post, error) {
 	}, nil
 }
 
+// Validate Post data
 func ValidatePost(postDTO dtos.PostDTO) error {
 	if postDTO.Message == "" {
 		return apperrors.NewPropertyRequiredError("message", "message")

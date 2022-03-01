@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/alelaca/chat-manager/src/entities/dtos"
-	"github.com/alelaca/chat-manager/src/infrastructure/repository"
+	"github.com/alelaca/chat-manager/src/repository"
 )
 
 func TestCreatePost_OK(t *testing.T) {

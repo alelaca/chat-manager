@@ -8,6 +8,7 @@ import (
 	"github.com/alelaca/chat-manager/src/adapters/queues"
 	"github.com/alelaca/chat-manager/src/adapters/routes"
 	"github.com/alelaca/chat-manager/src/adapters/websocket"
+	"github.com/alelaca/chat-manager/src/auth/jwt"
 	rabbitmqqueue "github.com/alelaca/chat-manager/src/queues/rabbitmq"
 	"github.com/alelaca/chat-manager/src/repository/mongodb"
 	rabbitmqtopics "github.com/alelaca/chat-manager/src/topics/rabbitmq"
@@ -18,6 +19,7 @@ import (
 )
 
 func main() {
+	authHandler := &jwt.Handler{}
 	rabbitmqClient := ConnectRabbitMQ()
 	mongodbClient := ConnectMongoDB()
 
@@ -30,7 +32,7 @@ func main() {
 
 	websocketHandler := websocket.InitializeWebsocketHandler(postHandler)
 	worker := queues.InitializeWorker(queuesHandler, postHandler, websocketHandler)
-	router := routes.InitializeRouter(*websocketHandler)
+	router := routes.InitializeRouter(websocketHandler, authHandler)
 
 	websocketHandler.StartPool()
 	worker.StartPollingPostsMessages()

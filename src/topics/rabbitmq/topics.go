@@ -32,8 +32,10 @@ func (h *Handler) NotifyMessage(post entities.Post) error {
 		return err
 	}
 
-	// TODO check if it is command
-	filter := strings.Replace(strings.TrimPrefix(post.Message, "/"), "=", ".", 1)
+	filter := ""
+	if strings.HasPrefix(post.Message, "/") {
+		filter = strings.Replace(strings.TrimPrefix(post.Message, "/"), "=", ".", 1)
+	}
 
 	return h.sendMessage(h.messagesTopic, filter, postBody)
 }

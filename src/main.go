@@ -39,7 +39,7 @@ func main() {
 }
 
 func ConnectRabbitMQ() *amqp.Connection {
-	connection, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	connection, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
 	if err != nil {
 		panic(fmt.Sprintf("error initializing rabbitmq connection, log: %s", err.Error()))
 	}
@@ -48,7 +48,7 @@ func ConnectRabbitMQ() *amqp.Connection {
 }
 
 func ConnectMongoDB() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017/"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongodb:27017/"))
 	if err != nil {
 		panic(err)
 	}

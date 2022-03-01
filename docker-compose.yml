@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  chat-manager:
+    build: .
+    ports:
+      - "8080:8080"
+    links:
+      - rabbitmq
+      - mongodb
+    depends_on:
+      - rabbitmq
+      - mongodb
+    command: sh -c "/wait && /build/chat-manager.go"
+    environment:
+      - WAIT_HOSTS=rabbitmq:5672,mongodb:27017
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+  rabbitmq:
+    image: "rabbitmq:latest"
+    volumes:
+      - "./rabbitmq-definitions.json:/etc/rabbitmq/definitions.json"
+    ports:
+      - "5672:5672"
+    expose:
+      - 5672
+  mongodb:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+    expose:
+      - 27017
+    

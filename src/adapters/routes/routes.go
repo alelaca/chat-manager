@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/alelaca/chat-manager/src/adapter/websocket"
+	"github.com/alelaca/chat-manager/src/adapters/websocket"
 	"github.com/alelaca/chat-manager/src/apperrors"
 	"github.com/gin-gonic/gin"
 )

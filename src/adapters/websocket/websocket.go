@@ -44,14 +44,16 @@ func InitializeWebsocketHandler(postHandler post.Usecases) *Handler {
 }
 
 func (h *Handler) StartPool() {
-	h.Pool.Start()
+	go func() {
+		h.Pool.Start()
+	}()
 }
 
 // Handles HTTP requests and enables a WebSocket connection to a client
 func (h *Handler) Connect(c *gin.Context) {
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println("error upgrading") // TODO change this to an error somewhere
+		fmt.Println("error upgrading")
 	}
 
 	client := &client{
@@ -64,6 +66,11 @@ func (h *Handler) Connect(c *gin.Context) {
 	client.Pool.Subscribe <- client
 
 	client.listen()
+}
+
+// Broadcast message to all connected Websockets
+func (h *Handler) Broadcast(post entities.Post) {
+	h.Pool.Broadcast <- post
 }
 
 // Listen to all incoming messages from client

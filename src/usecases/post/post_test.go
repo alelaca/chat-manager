@@ -18,7 +18,8 @@ func TestCreatePost_OK(t *testing.T) {
 	}
 
 	handler := Handler{
-		Repository: &repository.RepositoryMock{},
+		TopicsHandler: &topics.TopicMock{},
+		Repository:    &repository.RepositoryMock{},
 	}
 
 	timestamp := time.Now()
@@ -99,7 +100,8 @@ func TestCreatePost_EntitiesFail(t *testing.T) {
 	}
 
 	handler := Handler{
-		Repository: &repository.RepositoryMock{},
+		TopicsHandler: &topics.TopicMock{},
+		Repository:    &repository.RepositoryMock{},
 	}
 
 	_, err := handler.CreatePost(postDTO)
@@ -117,6 +119,7 @@ func TestCreatePost_RepositoryFail(t *testing.T) {
 	}
 
 	handler := Handler{
+		TopicsHandler: &topics.TopicMock{},
 		Repository: &repository.RepositoryMock{
 			SavePostError: errors.New("repo error"),
 		},

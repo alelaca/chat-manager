@@ -38,16 +38,16 @@ func (h *Handler) CreatePost(postDTO dtos.PostDTO) (*entities.Post, error) {
 		return nil, apperrors.CreateAPIError(http.StatusBadRequest, err.Error())
 	}
 
-	err = h.Repository.SavePost(post)
-	if err != nil {
-		return nil, err
-	}
-
-	if isCommandPost(post.Message) {
-		err := h.TopicsHandler.NotifyMessage(post)
+	if !isCommandPost(post.Message) {
+		err = h.Repository.SavePost(post)
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	err = h.TopicsHandler.NotifyMessage(post)
+	if err != nil {
+		return nil, err
 	}
 
 	return &post, nil

@@ -9,22 +9,22 @@ import (
 )
 
 type Post struct {
-	ID          string    `json:"id"`
-	Message     string    `json:"message"`
-	Sender      string    `json:"sender"`
-	Room        string    `json:"room"`
-	CreatedDate time.Time `json:"created_date"`
+	ID          string    `json:"id" bson:"_id"`
+	Message     string    `json:"message" bson:"message"`
+	Sender      string    `json:"sender" bson:"sender"`
+	Room        string    `json:"room" bson:"room"`
+	CreatedDate time.Time `json:"created_date" bson:"created_date"`
 }
 
 type Room struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID   string `json:"id" bson:"_id"`
+	Name string `json:"name" bson:"name"`
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Nickname string `json:"nickname"`
-	Password string `json:"password"`
+	ID       string `json:"id" bson:"_id"`
+	Username string `json:"username" bson:"username"`
+	Password string `json:"password" bson:"password"`
 }
 
 // Creates Post entity

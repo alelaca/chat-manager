@@ -30,8 +30,8 @@ func main() {
 	worker := queues.InitializeWorker(queuesHandler, postHandler, websocketHandler)
 	router := routes.InitializeRouter(*websocketHandler)
 
-	go websocketHandler.StartPool()
-	go worker.StartPollingPostsMessages()
+	websocketHandler.StartPool()
+	worker.StartPollingPostsMessages()
 
 	router.Run(":8080")
 }

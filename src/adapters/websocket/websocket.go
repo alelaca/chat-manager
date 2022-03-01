@@ -44,7 +44,9 @@ func InitializeWebsocketHandler(postHandler post.Usecases) *Handler {
 }
 
 func (h *Handler) StartPool() {
-	h.Pool.Start()
+	go func() {
+		h.Pool.Start()
+	}()
 }
 
 // Handles HTTP requests and enables a WebSocket connection to a client

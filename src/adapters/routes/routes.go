@@ -65,6 +65,7 @@ func (h *Handler) Login(c *gin.Context) {
 	token, err := h.AuthHandler.Login(credentials.Username, credentials.Password)
 	if err != nil {
 		abortWithCustomError(c, http.StatusUnauthorized, err)
+		return
 	}
 
 	// cant set httpOnly cookies for websockets

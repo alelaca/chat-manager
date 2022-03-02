@@ -19,18 +19,21 @@ import (
 )
 
 func main() {
-	authHandler := &jwt.Handler{}
 	rabbitmqClient := ConnectRabbitMQ()
 	mongodbClient := ConnectMongoDB()
 
 	repository := mongodb.InitializeMongoDB(mongodbClient)
+
+	authHandler := &jwt.Handler{
+		Repository: repository,
+	}
 
 	queuesHandler := rabbitmqqueue.InitializeRabbitMQHandler(rabbitmqClient)
 	topicsHandler := rabbitmqtopics.InitializeRabbitMQHandler(rabbitmqClient)
 
 	postHandler := post.InitializePostHandler(topicsHandler, repository)
 
-	websocketHandler := websocket.InitializeWebsocketHandler(postHandler)
+	websocketHandler := websocket.InitializeWebsocketHandler(postHandler, authHandler)
 	worker := queues.InitializeWorker(queuesHandler, postHandler, websocketHandler)
 	router := routes.InitializeRouter(websocketHandler, authHandler)
 
@@ -41,7 +44,7 @@ func main() {
 }
 
 func ConnectRabbitMQ() *amqp.Connection {
-	connection, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+	connection, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		panic(fmt.Sprintf("error initializing rabbitmq connection, log: %s", err.Error()))
 	}
@@ -50,7 +53,7 @@ func ConnectRabbitMQ() *amqp.Connection {
 }
 
 func ConnectMongoDB() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongodb:27017/"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017/"))
 	if err != nil {
 		panic(err)
 	}

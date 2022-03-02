@@ -3,12 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/alelaca/chat-manager/src/adapters/queues"
 	"github.com/alelaca/chat-manager/src/adapters/routes"
 	"github.com/alelaca/chat-manager/src/adapters/websocket"
 	"github.com/alelaca/chat-manager/src/auth/jwt"
+	"github.com/alelaca/chat-manager/src/config"
 	rabbitmqqueue "github.com/alelaca/chat-manager/src/queues/rabbitmq"
 	"github.com/alelaca/chat-manager/src/repository/mongodb"
 	rabbitmqtopics "github.com/alelaca/chat-manager/src/topics/rabbitmq"
@@ -18,9 +22,22 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const (
+	ScopeLocal      = "local"
+	ScopeIntgDocker = "intg_docker"
+)
+
 func main() {
-	rabbitmqClient := ConnectRabbitMQ()
-	mongodbClient := ConnectMongoDB()
+	profile := getProfile()
+
+	configFileName := getConfigFileName(profile)
+	envConfig, err := config.GetConfig(configFileName)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+
+	rabbitmqClient := ConnectRabbitMQ(envConfig)
+	mongodbClient := ConnectMongoDB(envConfig)
 
 	repository := mongodb.InitializeMongoDB(mongodbClient)
 
@@ -43,8 +60,22 @@ func main() {
 	router.Run(":8080")
 }
 
-func ConnectRabbitMQ() *amqp.Connection {
-	connection, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+func getConfigFileName(profile string) string {
+	return fmt.Sprintf("src/configfiles/config-%s.yml", strings.ToLower(profile))
+}
+
+func getProfile() string {
+	scope := strings.ToLower(os.Getenv("SCOPE"))
+
+	if scope != ScopeLocal && scope != ScopeIntgDocker {
+		log.Panicf("Wrong env var SCOPE defined. It should be %s or %s", ScopeLocal, ScopeIntgDocker)
+	}
+
+	return scope
+}
+
+func ConnectRabbitMQ(envConfig config.Config) *amqp.Connection {
+	connection, err := amqp.Dial(envConfig.RabbitMQ.URL)
 	if err != nil {
 		panic(fmt.Sprintf("error initializing rabbitmq connection, log: %s", err.Error()))
 	}
@@ -52,8 +83,8 @@ func ConnectRabbitMQ() *amqp.Connection {
 	return connection
 }
 
-func ConnectMongoDB() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017/"))
+func ConnectMongoDB(envConfig config.Config) *mongo.Client {
+	client, err := mongo.NewClient(options.Client().ApplyURI(envConfig.MongoDB.URL))
 	if err != nil {
 		panic(err)
 	}

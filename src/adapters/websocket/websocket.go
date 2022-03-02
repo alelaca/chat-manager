@@ -94,8 +94,6 @@ func (c *client) listen() {
 			break
 		}
 
-		fmt.Println(authPost)
-
 		err = c.AuthHandler.Authenticate(authPost.Token)
 		if err != nil {
 			fmt.Println("unauth")

@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alelaca/chat-manager/src/apperrors"
+	"github.com/alelaca/chat-manager/src/auth"
 	"github.com/alelaca/chat-manager/src/entities"
 	"github.com/alelaca/chat-manager/src/entities/dtos"
 	"github.com/alelaca/chat-manager/src/usecases/post"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -26,20 +25,28 @@ var upgrader = websocket.Upgrader{
 type Handler struct {
 	Pool        *Pool
 	PostHandler post.Usecases
+	AuthHandler auth.Handler
 }
 
 type client struct {
-	ID          string
+	Username    string
 	Connection  *websocket.Conn
 	Pool        *Pool
 	PostHandler post.Usecases
+	AuthHandler auth.Handler
 }
 
-func InitializeWebsocketHandler(postHandler post.Usecases) *Handler {
+type AuthenticatedPost struct {
+	Token string       `json:"token"`
+	Post  dtos.PostDTO `json:"post"`
+}
+
+func InitializeWebsocketHandler(postHandler post.Usecases, authHandler auth.Handler) *Handler {
 	pool := InitializeClientPool()
 	return &Handler{
 		Pool:        pool,
 		PostHandler: postHandler,
+		AuthHandler: authHandler,
 	}
 }
 
@@ -57,10 +64,10 @@ func (h *Handler) Connect(c *gin.Context) {
 	}
 
 	client := &client{
-		ID:          uuid.NewString(),
 		Connection:  ws,
 		Pool:        h.Pool,
 		PostHandler: h.PostHandler,
+		AuthHandler: h.AuthHandler,
 	}
 
 	client.Pool.Subscribe <- client
@@ -80,17 +87,25 @@ func (c *client) listen() {
 	}()
 
 	for {
-		postDTO := dtos.PostDTO{}
-		err := c.Connection.ReadJSON(&postDTO)
+		authPost := AuthenticatedPost{}
+		err := c.Connection.ReadJSON(&authPost)
 		if err != nil {
 			fmt.Println("error reading message", err.Error())
 			break
 		}
 
-		post, err := c.PostHandler.CreatePost(postDTO)
+		fmt.Println(authPost)
+
+		err = c.AuthHandler.Authenticate(authPost.Token)
+		if err != nil {
+			fmt.Println("unauth")
+			c.Pool.Unsubscribe <- c
+		}
+
+		post, err := c.PostHandler.CreatePost(authPost.Post)
 		if err != nil {
 			fmt.Println(fmt.Sprintf("error creating post: '%s'", err.Error()))
-			c.logErrorToClient(err, postDTO)
+			c.logErrorToClient(err, authPost.Post)
 			continue
 		}
 
@@ -108,11 +123,6 @@ func (c *client) sendMessage(post entities.Post) {
 
 // Send error messages to client
 func (c *client) logErrorToClient(err error, postDTO dtos.PostDTO) {
-	apiError, ok := err.(apperrors.APIError)
-	if !ok || apiError.StatusCode < 500 {
-		return
-	}
-
 	errorMessage := fmt.Sprintf("Error processing your message, please try again. Message not sent: '%s'", postDTO.Message)
 	postDTO.Message = errorMessage
 

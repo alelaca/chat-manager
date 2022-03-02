@@ -6,6 +6,7 @@ import (
 
 	"github.com/alelaca/chat-manager/src/apperrors"
 	"github.com/alelaca/chat-manager/src/auth"
+	"github.com/alelaca/chat-manager/src/usecases/interfaces"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -22,12 +23,18 @@ type Claims struct {
 }
 
 type Handler struct {
+	Repository interfaces.Repository
 }
 
 func (h *Handler) Login(username, password string) (auth.Token, error) {
-	expectedPassword, ok := users[username]
-	if !ok || expectedPassword != password {
-		return auth.Token{}, apperrors.CreateAPIError(http.StatusUnauthorized, "invlaid username or password")
+	password = auth.HashSHA256(password)
+	user, err := h.Repository.AuthenticateUser(username, password)
+	if err != nil {
+		return auth.Token{}, apperrors.CreateAPIError(http.StatusInternalServerError, "error authenticating user")
+	}
+
+	if user == nil {
+		return auth.Token{}, apperrors.CreateAPIError(http.StatusUnauthorized, "invalid username or password")
 	}
 
 	tokenExpirationTime := time.Now().Add(15 * time.Minute)

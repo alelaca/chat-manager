@@ -32,6 +32,8 @@ services:
       - WAIT_HOST_CONNECT_TIMEOUT=30
   rabbitmq:
     build: ./docker/rabbitmq
+    volumes:
+      - ./definitions.json:/etc/rabbitmq/definitions.json
     ports:
       - "5672:5672"
       - "15672:15672"

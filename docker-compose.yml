@@ -16,16 +16,29 @@ services:
       - WAIT_HOSTS_TIMEOUT=300
       - WAIT_SLEEP_INTERVAL=30
       - WAIT_HOST_CONNECT_TIMEOUT=30
+  stock-bot:
+    build: ./docker/projects/stock-bot
+    ports:
+      - "8090:8080"
+    links:
+      - rabbitmq
+    depends_on:
+      - rabbitmq
+    command: sh -c "/wait && /build/stock-bot.go"
+    environment:
+      - WAIT_HOSTS=rabbitmq:5672
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
   rabbitmq:
-    image: "rabbitmq:latest"
-    volumes:
-      - "./rabbitmq-definitions.json:/etc/rabbitmq/definitions.json"
+    build: ./docker/rabbitmq
     ports:
       - "5672:5672"
+      - "15672:15672"
     expose:
       - 5672
   mongodb:
-    image: "mongo:latest"
+    build: ./docker/mongo
     ports:
       - "27017:27017"
     expose:

@@ -1,0 +1,10 @@
+mongodb:
+  url: mongodb://localhost:27017/
+rabbitmq:
+  url: amqp://guest:guest@localhost:5672/
+  command_queue:
+    name: command-queue
+  posts_queue:
+    name: posts-queue
+  messages_topic:
+    name: messages-topic

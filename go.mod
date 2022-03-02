@@ -9,4 +9,5 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.8.3 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

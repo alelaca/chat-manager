@@ -12,6 +12,7 @@ services:
       - mongodb
     command: sh -c "/wait && /build/chat-manager.go"
     environment:
+      - SCOPE=intg_docker
       - WAIT_HOSTS=rabbitmq:5672,mongodb:27017
       - WAIT_HOSTS_TIMEOUT=300
       - WAIT_SLEEP_INTERVAL=30

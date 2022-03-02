@@ -1,3 +1,3 @@
-FROM rabbitmq:latest
+FROM rabbitmq:3.9-management
 
-COPY rabbitmq-definitions.json /etc/rabbitmq/definitions.json
+COPY ./definitions.json /etc/rabbitmq/
